@@ -26,6 +26,14 @@ pnpm check
 3. پس از Deploy، دامنهٔ HTTPS تولیدشده را کپی کنید.
 4. در BotFather دستور `/mybots` → ربات → **Bot Settings** → **Menu Button** → **Configure menu button** را انتخاب و همان URL را ثبت کنید.
 
+## استقرار روی GitHub Pages
+
+نسخهٔ production با هر push به شاخهٔ `main` توسط workflow رسمی GitHub Pages منتشر می‌شود:
+
+<https://cinderella2026.github.io/Moon_irl/>
+
+تنظیم Vite فقط هنگام اجرای GitHub Actions مسیر پایه را روی `/Moon_irl/` قرار می‌دهد؛ بنابراین build محلی و Vercel همچنان از مسیر `/` استفاده می‌کنند.
+
 ## اتصال امن به Telegram
 
 Mini App اطلاعات Telegram را از `window.Telegram.WebApp` می‌خواند و در مرورگر عادی هم بدون خطا نمایش داده می‌شود. برای اضافه‌کردن حساب کاربری یا ذخیرهٔ داده:
@@ -44,6 +52,7 @@ Mini App اطلاعات Telegram را از `window.Telegram.WebApp` می‌خو�
 - `src/App.tsx`: رابط اصلی و تعامل قدم روزانه
 - `src/styles.css`: طراحی responsive با پشتیبانی safe-area موبایل
 - `.github/workflows/ci.yml`: اجرای lint و build روی هر push/PR
+- `.github/workflows/pages.yml`: ساخت و انتشار خودکار نسخهٔ production در GitHub Pages
 - `vercel.json`: تنظیم build، SPA routing و هدرهای امنیتی
 
 ## وضعیت فعلی
