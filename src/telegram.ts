@@ -38,8 +38,8 @@ export function initializeTelegram() {
   if (!app) return
   app.ready()
   app.expand()
-  app.setHeaderColor?.('#080711')
-  app.setBackgroundColor?.('#080711')
+  app.setHeaderColor?.('#0b0b0f')
+  app.setBackgroundColor?.('#0b0b0f')
 }
 
 export function currentTelegramUser() {

@@ -1,60 +1,74 @@
 # MOON IRL 🌙
 
-یک Telegram Mini App فارسی و موبایل‌محور برای تبدیل نیت‌های کوچک به قدم‌های واقعی.
+**MOON IRL یک شبکهٔ اجتماعی زندگی واقعی برای آدم‌ها، ارتباط‌ها، سازنده‌ها و لحظه‌های روزمره است.**
+
+این ریپو در وضعیت فعلی یک پروتوتایپ موبایل‌محور و قابل‌کلیک است که هم به‌صورت وب مستقل و هم داخل Telegram Mini App اجرا می‌شود. هیچ secret یا bot token در فرانت‌اند قرار ندارد.
+
+## چیزی که اکنون قابل استفاده است
+
+- فید عکس، متن، رویداد، Life Update و رابطهٔ دوطرفه
+- وضعیت‌های ۲۴ ساعته و پروفایل عمومی
+- جست‌وجو و فیلتر افراد برای دوستی، رابطه و سازنده‌ها
+- Top 10 و Community Rating از ۱ تا ۱۰
+- دنبال‌کردن، لایک، ذخیره، نظر و اعلام حضور در رویداد
+- ساخت پست متنی، عکس، وضعیت، رویداد، Life Update و ژورنال خصوصی
+- پیام‌ها، درخواست‌ها و نمای رابطهٔ تأییدشده
+- پروفایل شخصی، Mood، To-do، Journal، ذخیره‌ها و Full Moon
+- تنظیمات حریم خصوصی، Block/Report و مسیرهای ایمنی در UI
+- ذخیرهٔ تعامل‌های نمونه در `localStorage`
+- Telegram WebApp bridge برای `ready`، `expand`، رنگ پوسته و haptic feedback
+
+## مرز نسخهٔ نمایشی
+
+GitHub Pages یک میزبان استاتیک است. بنابراین این نسخه هنوز حساب واقعی، احراز هویت، دیتابیس، آپلود دائمی، پیام‌رسانی بین کاربران، پرداخت، moderation یا همگام‌سازی ابری ندارد. UI این موضوع را با برچسب «نسخهٔ نمایشی» مشخص می‌کند و داده‌های محلی فقط در همان مرورگر می‌مانند.
+
+برای نسخهٔ واقعی باید یک backend مستقل اضافه شود. Telegram فقط لایهٔ ورود/اجرا/پرداخت خواهد بود و داده‌های MOON در پایگاه‌دادهٔ خود محصول نگه‌داری می‌شوند.
 
 ## اجرای محلی
 
-نیازمندی: Node.js 22 و pnpm 10.
+نیازمندی‌ها: Node.js 22 و pnpm 10.
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-برای کنترل کیفیت و ساخت نسخهٔ نهایی:
+کنترل کیفیت و build نهایی:
 
 ```bash
 pnpm check
 ```
 
-خروجی production در پوشهٔ `dist` ساخته می‌شود.
+خروجی production در `dist/` ساخته می‌شود.
 
-## استقرار روی Vercel
+## انتشار
 
-1. این ریپو را در Vercel با گزینهٔ **Import Git Repository** وارد کنید.
-2. Vercel به‌صورت خودکار Vite را تشخیص می‌دهد؛ تنظیمات لازم در `vercel.json` نیز ثبت شده‌اند.
-3. پس از Deploy، دامنهٔ HTTPS تولیدشده را کپی کنید.
-4. در BotFather دستور `/mybots` → ربات → **Bot Settings** → **Menu Button** → **Configure menu button** را انتخاب و همان URL را ثبت کنید.
-
-## استقرار روی GitHub Pages
-
-نسخهٔ production با هر push به شاخهٔ `main` توسط workflow رسمی GitHub Pages منتشر می‌شود:
+هر push به شاخهٔ `main` ابتدا lint و build را اجرا می‌کند و سپس GitHub Pages از طریق workflow رسمی منتشر می‌شود:
 
 <https://cinderella2026.github.io/Moon_irl/>
 
-تنظیم Vite فقط هنگام اجرای GitHub Actions مسیر پایه را روی `/Moon_irl/` قرار می‌دهد؛ بنابراین build محلی و Vercel همچنان از مسیر `/` استفاده می‌کنند.
+تنظیم Vite در GitHub Actions مسیر پایه را روی `/Moon_irl/` می‌گذارد. build محلی و Vercel همچنان از `/` استفاده می‌کنند.
+
+برای Vercel نیز می‌توان ریپو را Import کرد؛ تنظیمات build و headerها در `vercel.json` ثبت شده‌اند.
 
 ## اتصال امن به Telegram
 
-Mini App اطلاعات Telegram را از `window.Telegram.WebApp` می‌خواند و در مرورگر عادی هم بدون خطا نمایش داده می‌شود. برای اضافه‌کردن حساب کاربری یا ذخیرهٔ داده:
+- `Telegram.WebApp.initDataUnsafe` در این نمونه فقط برای نمایش نام/عکس استفاده می‌شود و مبنای احراز هویت نیست.
+- در نسخهٔ واقعی، `Telegram.WebApp.initData` از فرانت‌اند به backend فرستاده و امضا فقط در سرور اعتبارسنجی می‌شود.
+- `BOT_TOKEN` فقط در secret manager سرویس backend نگه‌داری می‌شود.
+- هیچ secret نباید نامی با پیشوند `VITE_` داشته باشد؛ متغیرهای `VITE_*` داخل کد عمومی مرورگر قرار می‌گیرند.
+- `.env.example` فقط قرارداد URL عمومی API را نشان می‌دهد.
 
-- مقدار `Telegram.WebApp.initData` را از فرانت‌اند به بک‌اند خود بفرستید.
-- امضای `initData` را **فقط در سرور** و مطابق مستندات Telegram اعتبارسنجی کنید.
-- `BOT_TOKEN` فقط در secretهای سرویس backend/Vercel نگه‌داری شود.
-- هیچ‌وقت توکن را با پیشوند `VITE_` تعریف نکنید؛ این متغیرها داخل کد عمومی مرورگر قرار می‌گیرند.
-- به `initDataUnsafe` برای احراز هویت اعتماد نکنید؛ در این نسخه فقط برای نمایش نام و تصویر استفاده شده است.
+## ساختار اصلی
 
-فایل `.env.example` فقط قرارداد متغیر عمومی را نشان می‌دهد و هیچ secret واقعی ندارد.
+- `src/App.tsx`: پنج بخش اصلی، جریان‌ها، sheetها و state محلی پروتوتایپ
+- `src/data.ts`: دادهٔ نمایشی واضح و typeهای محتوای اجتماعی
+- `src/Icon.tsx`: آیکن‌های SVG بدون dependency خارجی
+- `src/styles.css`: طراحی dark-first، RTL، responsive و safe-area
+- `src/telegram.ts`: اتصال محدود و امن به Telegram WebApp
+- `.github/workflows/ci.yml`: lint و build روی push/PR
+- `.github/workflows/pages.yml`: انتشار خودکار GitHub Pages
 
-## ساختار
+## مسیر نسخهٔ واقعی
 
-- `src/telegram.ts`: پل سبک و type-safe به Telegram WebApp
-- `src/App.tsx`: رابط اصلی و تعامل قدم روزانه
-- `src/styles.css`: طراحی responsive با پشتیبانی safe-area موبایل
-- `.github/workflows/ci.yml`: اجرای lint و build روی هر push/PR
-- `.github/workflows/pages.yml`: ساخت و انتشار خودکار نسخهٔ production در GitHub Pages
-- `vercel.json`: تنظیم build، SPA routing و هدرهای امنیتی
-
-## وضعیت فعلی
-
-نسخهٔ اولیه شامل صفحهٔ خانه، پیشرفت روزانه، قدم پیشنهادی، بازخورد لمسی Telegram و fallback مرورگر است. تب‌های «مسیر» و «من» فعلاً ناوبری نمایشی هستند و برای اتصال دادهٔ واقعی به backend آماده‌اند.
+اولویت backend: احراز هویت Telegram → حساب و پروفایل → پست و Follow → Feed → Rating و Top 10 → Discover و Relationship → DM → Block/Report/Moderation → Photo Verification → Full Moon. ابزارهای Life خصوصی باقی می‌مانند و به‌صورت پیش‌فرض عمومی نمی‌شوند.
