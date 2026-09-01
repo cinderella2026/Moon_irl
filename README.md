@@ -1,28 +1,21 @@
 # MOON IRL 🌙
 
-**MOON IRL یک شبکهٔ اجتماعی زندگی واقعی برای آدم‌ها، ارتباط‌ها، سازنده‌ها و لحظه‌های روزمره است.**
+MOON IRL یک شبکهٔ اجتماعی موبایل‌محور برای زندگی واقعی، آدم‌ها، ارتباط‌ها، سازنده‌ها و لحظه‌های روزمره است. همین رابط هم به‌صورت وب مستقل و هم داخل Telegram Mini App اجرا می‌شود.
 
-این ریپو در وضعیت فعلی یک پروتوتایپ موبایل‌محور و قابل‌کلیک است که هم به‌صورت وب مستقل و هم داخل Telegram Mini App اجرا می‌شود. هیچ secret یا bot token در فرانت‌اند قرار ندارد.
+## وضعیت محصول
 
-## چیزی که اکنون قابل استفاده است
+نسخهٔ فعلی از یک پروتوتایپ صرف عبور کرده و زیرساخت واقعی عضویت و داده را دارد:
 
-- فید عکس، متن، رویداد، Life Update و رابطهٔ دوطرفه
-- وضعیت‌های ۲۴ ساعته و پروفایل عمومی
-- جست‌وجو و فیلتر افراد برای دوستی، رابطه و سازنده‌ها
-- Top 10 و Community Rating از ۱ تا ۱۰
-- دنبال‌کردن، لایک، ذخیره، نظر و اعلام حضور در رویداد
-- ساخت پست متنی، عکس، وضعیت، رویداد، Life Update و ژورنال خصوصی
-- پیام‌ها، درخواست‌ها و نمای رابطهٔ تأییدشده
-- پروفایل شخصی، Mood، To-do، Journal، ذخیره‌ها و Full Moon
-- تنظیمات حریم خصوصی، Block/Report و مسیرهای ایمنی در UI
-- ذخیرهٔ تعامل‌های نمونه در `localStorage`
-- Telegram WebApp bridge برای `ready`، `expand`، رنگ پوسته و haptic feedback
+- ورود بدون رمز با ایمیل و لینک یک‌بارمصرف
+- پروفایل واقعی متصل به Supabase و Row Level Security
+- اولین آیدی معمولی ۵ تا ۲۰ کاراکتری رایگان
+- قیمت ثابت ۱۵۰ Telegram Stars برای آیدی ۳–۴ حرفی یا تغییر آیدی
+- حذف کامل و برگشت‌ناپذیر حساب از Auth و تمام جدول‌های وابسته
+- مدل داده برای پروفایل، پست، دنبال‌کردن، امتیاز، رابطه، گفتگو، پیام، بلاک، گزارش، To-do و Journal
+- فید، Discover، Top 10، Community Rating، پست، رویداد، Life Update، پیام‌ها و ابزارهای شخصی
+- Telegram WebApp bridge برای `ready`، `expand`، پوسته، haptic و بازکردن invoice
 
-## مرز نسخهٔ نمایشی
-
-GitHub Pages یک میزبان استاتیک است. بنابراین این نسخه هنوز حساب واقعی، احراز هویت، دیتابیس، آپلود دائمی، پیام‌رسانی بین کاربران، پرداخت، moderation یا همگام‌سازی ابری ندارد. UI این موضوع را با برچسب «نسخهٔ نمایشی» مشخص می‌کند و داده‌های محلی فقط در همان مرورگر می‌مانند.
-
-برای نسخهٔ واقعی باید یک backend مستقل اضافه شود. Telegram فقط لایهٔ ورود/اجرا/پرداخت خواهد بود و داده‌های MOON در پایگاه‌دادهٔ خود محصول نگه‌داری می‌شوند.
+ورود Apple و پرداخت آیدی ویژه به‌صورت feature flag کنترل می‌شوند. تا وقتی کلیدهای مالک و Bot Token فقط در secret manager سرور ثبت نشده باشند، دکمه‌های مربوطه عمداً غیرفعال می‌مانند و مسیر خراب به کاربر نشان داده نمی‌شود.
 
 ## اجرای محلی
 
@@ -30,45 +23,61 @@ GitHub Pages یک میزبان استاتیک است. بنابراین این ن
 
 ```bash
 pnpm install --frozen-lockfile
+cp .env.example .env.local
 pnpm dev
 ```
 
-کنترل کیفیت و build نهایی:
+کنترل کامل lint، TypeScript و build:
 
 ```bash
 pnpm check
 ```
 
-خروجی production در `dist/` ساخته می‌شود.
+## متغیرهای عمومی فرانت‌اند
+
+فقط URL پروژه و کلید publishable عمومی Supabase در build مرورگر قرار می‌گیرند. امنیت داده بر RLS و policyهای دیتابیس متکی است.
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_public_key
+VITE_EMAIL_CODE_ENABLED=false
+VITE_APPLE_AUTH_ENABLED=false
+VITE_PREMIUM_USERNAME_ENABLED=false
+```
+
+هیچ‌کدام از این موارد نباید وارد ریپو یا متغیر `VITE_*` شوند: `SUPABASE_SERVICE_ROLE_KEY`، `TELEGRAM_BOT_TOKEN`، secret وبهوک، Apple private key یا هر secret دیگر.
+
+## دیتابیس و Edge Functions
+
+- migration اصلی: `supabase/migrations/202608310001_initial.sql`
+- حذف حساب: `supabase/functions/delete-account`
+- ساخت فاکتور Stars: `supabase/functions/create-username-invoice`
+- تأیید پرداخت و ثبت آیدی: `supabase/functions/telegram-payment-webhook`
+
+جزئیات استقرار و secretهای لازم در `supabase/README.md` آمده است.
 
 ## انتشار
 
-هر push به شاخهٔ `main` ابتدا lint و build را اجرا می‌کند و سپس GitHub Pages از طریق workflow رسمی منتشر می‌شود:
+هر push به `main` با GitHub Actions build می‌شود و از طریق GitHub Pages منتشر می‌شود:
 
 <https://cinderella2026.github.io/Moon_irl/>
 
-تنظیم Vite در GitHub Actions مسیر پایه را روی `/Moon_irl/` می‌گذارد. build محلی و Vercel همچنان از `/` استفاده می‌کنند.
+workflow فقط URL و کلید publishable عمومی Supabase را برای build مرورگر تنظیم می‌کند. هیچ service key، Bot Token یا secret دیگری در سورس ذخیره نمی‌شود.
 
-برای Vercel نیز می‌توان ریپو را Import کرد؛ تنظیمات build و headerها در `vercel.json` ثبت شده‌اند.
+## اصول امنیتی
 
-## اتصال امن به Telegram
-
-- `Telegram.WebApp.initDataUnsafe` در این نمونه فقط برای نمایش نام/عکس استفاده می‌شود و مبنای احراز هویت نیست.
-- در نسخهٔ واقعی، `Telegram.WebApp.initData` از فرانت‌اند به backend فرستاده و امضا فقط در سرور اعتبارسنجی می‌شود.
-- `BOT_TOKEN` فقط در secret manager سرویس backend نگه‌داری می‌شود.
-- هیچ secret نباید نامی با پیشوند `VITE_` داشته باشد؛ متغیرهای `VITE_*` داخل کد عمومی مرورگر قرار می‌گیرند.
-- `.env.example` فقط قرارداد URL عمومی API را نشان می‌دهد.
+- کلید service role فقط داخل Edge Function و secret manager است.
+- حذف کاربر فقط سمت سرور و پس از اعتبارسنجی access token انجام می‌شود.
+- Bot Token فقط سمت سرور استفاده می‌شود.
+- پرداخت موفق با payload یکتا، مبلغ/ارز، وضعیت سفارش، تعارض آیدی و تکراری‌نبودن update کنترل می‌شود.
+- `Telegram.WebApp.initDataUnsafe` مبنای احراز هویت نیست.
+- همهٔ جدول‌های کاربرمحور RLS دارند؛ Journal و To-do فقط برای مالک قابل‌خواندن هستند.
 
 ## ساختار اصلی
 
-- `src/App.tsx`: پنج بخش اصلی، جریان‌ها، sheetها و state محلی پروتوتایپ
-- `src/data.ts`: دادهٔ نمایشی واضح و typeهای محتوای اجتماعی
-- `src/Icon.tsx`: آیکن‌های SVG بدون dependency خارجی
-- `src/styles.css`: طراحی dark-first، RTL، responsive و safe-area
-- `src/telegram.ts`: اتصال محدود و امن به Telegram WebApp
-- `.github/workflows/ci.yml`: lint و build روی push/PR
-- `.github/workflows/pages.yml`: انتشار خودکار GitHub Pages
-
-## مسیر نسخهٔ واقعی
-
-اولویت backend: احراز هویت Telegram → حساب و پروفایل → پست و Follow → Feed → Rating و Top 10 → Discover و Relationship → DM → Block/Report/Moderation → Photo Verification → Full Moon. ابزارهای Life خصوصی باقی می‌مانند و به‌صورت پیش‌فرض عمومی نمی‌شوند.
+- `src/App.tsx`: جریان‌های اصلی محصول و صفحه‌ها
+- `src/AuthScreen.tsx`: عضویت بدون رمز
+- `src/AccountSheet.tsx`: آیدی یکتا، روش‌های ورود و حذف حساب
+- `src/backend.ts`: اتصال محدود فرانت‌اند به Auth، RPC و Edge Functions
+- `src/telegram.ts`: اتصال امن و محدود به Telegram Mini App
+- `supabase/`: schema، policyها و منطق محرمانهٔ سرور

@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
+import type { Session } from '@supabase/supabase-js'
+import { AccountSheet } from './AccountSheet'
+import { AuthScreen } from './AuthScreen'
 import { Icon, type IconName } from './Icon'
 import {
   conversations,
@@ -10,6 +13,13 @@ import {
   type Profile,
 } from './data'
 import { currentTelegramUser, hapticSuccess } from './telegram'
+import {
+  backendConfigured,
+  getCurrentSession,
+  loadMoonAccount,
+  watchSession,
+  type MoonAccount,
+} from './backend'
 
 type Tab = 'home' | 'discover' | 'create' | 'people' | 'me'
 type DiscoverMode = 'همه' | 'دوستی' | 'رابطه' | 'سازنده‌ها'
@@ -650,15 +660,15 @@ function CommentsSheet({ post, comments, onAdd, onClose }: { post: Post; comment
   )
 }
 
-function SettingsSheet({ onClose }: { onClose: () => void }) {
+function SettingsSheet({ onClose, onAccount, accountLabel }: { onClose: () => void; onAccount: () => void; accountLabel: string }) {
   const [privateAccount, setPrivateAccount] = useState(false)
   return (
     <div className="sheet-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
       <section className="bottom-sheet settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <div className="sheet-handle" /><header><div><h2 id="settings-title">تنظیمات و امنیت</h2><p>حساب، حریم خصوصی و کنترل داده‌ها</p></div><button className="icon-button" type="button" onClick={onClose} aria-label="بستن"><Icon name="close" /></button></header>
-        <div className="settings-group"><button type="button"><span><Icon name="user" /><b>ویرایش پروفایل</b></span><Icon name="chevron-left" /></button><button type="button"><span><Icon name="verified" /><b>تأیید عکس و ۱۸+</b></span><small>برای نسخهٔ سرور</small><Icon name="chevron-left" /></button></div>
+        <div className="settings-group"><button type="button" onClick={onAccount}><span><Icon name="moon" /><b>حساب و آیدی MOON</b></span><small dir="ltr">{accountLabel}</small><Icon name="chevron-left" /></button><button type="button"><span><Icon name="user" /><b>ویرایش پروفایل</b></span><Icon name="chevron-left" /></button><button type="button"><span><Icon name="verified" /><b>تأیید عکس و ۱۸+</b></span><small>در مرحلهٔ فعال‌سازی</small><Icon name="chevron-left" /></button></div>
         <div className="settings-group"><label><span><Icon name="lock" /><span><b>حساب خصوصی</b><small>درخواست‌های دنبال‌کردن را خودت تأیید می‌کنی</small></span></span><input type="checkbox" checked={privateAccount} onChange={(event) => setPrivateAccount(event.target.checked)} /></label><button type="button"><span><Icon name="people" /><b>کاربران Block شده</b></span><Icon name="chevron-left" /></button><button type="button"><span><Icon name="globe" /><b>زبان</b></span><small>فارسی</small><Icon name="chevron-left" /></button></div>
-        <div className="settings-group danger"><button type="button"><span><Icon name="journal" /><b>دریافت داده‌ها</b></span><Icon name="chevron-left" /></button><button type="button"><span><Icon name="close" /><b>حذف حساب</b></span><small>نیازمند سرور امن</small><Icon name="chevron-left" /></button></div>
+        <div className="settings-group danger"><button type="button"><span><Icon name="journal" /><b>دریافت داده‌ها</b></span><Icon name="chevron-left" /></button><button type="button" onClick={onAccount}><span><Icon name="close" /><b>حذف حساب</b></span><small>تأیید دوباره لازم است</small><Icon name="chevron-left" /></button></div>
         <div className="legal-links"><button type="button">قوانین جامعه</button><button type="button">حریم خصوصی</button><button type="button">راهنمای امنیت</button><small>MOON IRL · Demo 0.2</small></div>
       </section>
     </div>
@@ -675,6 +685,9 @@ const navigation: { id: Tab; label: string; icon: IconName }[] = [
 
 export function App() {
   const telegramUser = useMemo(() => currentTelegramUser(), [])
+  const [session, setSession] = useState<Session | null | undefined>(backendConfigured ? undefined : null)
+  const [demoMode, setDemoMode] = useState(() => !backendConfigured && window.sessionStorage.getItem('moon-demo-access') === 'true')
+  const [account, setAccount] = useState<MoonAccount | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('home')
   const [previousTab, setPreviousTab] = useState<Tab>('home')
   const [posts, setPosts] = useState<Post[]>(() => readStored(storageKeys.posts, starterPosts))
@@ -696,11 +709,33 @@ export function App() {
   const [comments, setComments] = useState<Record<string, Comment[]>>({})
   const [lifeOpen, setLifeOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
   const [peopleMode, setPeopleMode] = useState<PeopleMode>('messages')
   const [going, setGoing] = useState<Record<string, boolean>>({})
   const [requests, setRequests] = useState<Record<string, 'pending' | 'accepted' | 'rejected'>>({})
   const [toast, setToast] = useState('')
 
+  useEffect(() => {
+    let active = true
+    getCurrentSession()
+      .then((currentSession) => { if (active) setSession(currentSession) })
+      .catch(() => { if (active) setSession(null) })
+    const stopWatching = watchSession((nextSession) => {
+      if (active) setSession(nextSession)
+    })
+    return () => {
+      active = false
+      stopWatching()
+    }
+  }, [])
+  useEffect(() => {
+    if (!session) return
+    let active = true
+    loadMoonAccount(session)
+      .then((nextAccount) => { if (active) setAccount(nextAccount) })
+      .catch(() => undefined)
+    return () => { active = false }
+  }, [session])
   useEffect(() => writeStored(storageKeys.posts, posts), [posts])
   useEffect(() => writeStored(storageKeys.liked, liked), [liked])
   useEffect(() => writeStored(storageKeys.saved, saved), [saved])
@@ -722,6 +757,7 @@ export function App() {
       setActiveComments(null)
       setLifeOpen(false)
       setSettingsOpen(false)
+      setAccountOpen(false)
     }
     window.addEventListener('keydown', closeOverlay)
     return () => window.removeEventListener('keydown', closeOverlay)
@@ -790,12 +826,47 @@ export function App() {
 
   const activeCommentPost = activeComments ? posts.find((post) => post.id === activeComments) : undefined
   const displayName = telegramUser?.first_name || profileById('ella').name.split(' ')[0]
+  const visibleAccount = account ?? {
+    id: session?.user.id ?? 'demo',
+    email: session?.user.email ?? null,
+    username: null,
+    display_name: null,
+    avatar_url: null,
+    account_status: 'active' as const,
+  }
+
+  function enterDemo() {
+    window.sessionStorage.setItem('moon-demo-access', 'true')
+    setDemoMode(true)
+  }
+
+  function leaveMembership() {
+    window.sessionStorage.removeItem('moon-demo-access')
+    setDemoMode(false)
+    setSession(null)
+    setAccount(null)
+    setAccountOpen(false)
+    setSettingsOpen(false)
+  }
+
+  function finishAccountDeletion() {
+    Object.values(storageKeys).forEach((key) => window.localStorage.removeItem(key))
+    leaveMembership()
+  }
+
+  if (session === undefined) {
+    return <main className="auth-loading" dir="rtl"><span className="loading-moon">◐</span><p>در حال بررسی عضویت...</p></main>
+  }
+
+  if (!session && !demoMode) {
+    return <AuthScreen onDemo={enterDemo} onAuthenticated={() => getCurrentSession().then(setSession).catch(() => setSession(null))} />
+  }
 
   return (
     <div className="app-frame" dir="rtl">
       <div className="desktop-brand" aria-hidden="true"><span>MO◐N</span><p>آدم‌ها، ارتباط‌ها و زندگی واقعی.</p></div>
       <div className="app-shell">
-        <div className="demo-ribbon"><span className="status-dot" /> نسخهٔ نمایشی · تغییرات روی همین دستگاه</div>
+        <div className={`demo-ribbon ${session ? 'online-account' : ''}`}><span className="status-dot" /> {session ? 'عضویت آنلاین · دیتابیس امن' : 'نسخهٔ نمایشی · تغییرات روی همین دستگاه'}</div>
 
         {activeTab === 'home' && <HomeScreen posts={posts} liked={liked} saved={saved} follows={follows} going={going} onToggleLike={(id) => toggleState(setLiked, id)} onToggleSave={(id) => { toggleState(setSaved, id); setToast(saved[id] ? 'از ذخیره‌ها حذف شد' : 'ذخیره شد') }} onToggleFollow={toggleFollow} onComments={setActiveComments} onProfile={setSelectedProfile} onShare={sharePost} onGoing={(id) => { toggleState(setGoing, id); setToast(going[id] ? 'از فهرست مهمان‌ها خارج شدی' : 'به رویداد اضافه شدی') }} onLife={() => setLifeOpen(true)} onDiscover={() => navigate('discover')} mood={mood} openTasks={tasks.filter((task) => !task.done).length} />}
         {activeTab === 'discover' && <DiscoverScreen follows={follows} onFollow={toggleFollow} onProfile={setSelectedProfile} />}
@@ -811,7 +882,8 @@ export function App() {
       {lifeOpen && <LifeSheet mood={mood} setMood={setMood} tasks={tasks} setTasks={setTasks} journal={journal} setJournal={setJournal} onClose={() => setLifeOpen(false)} />}
       {selectedProfile && <ProfileSheet profileId={selectedProfile} following={Boolean(follows[selectedProfile])} rating={ratings[selectedProfile]} onFollow={() => toggleFollow(selectedProfile)} onRate={(value) => { setRatings((state) => ({ ...state, [selectedProfile]: value })); setToast('امتیازت ثبت شد'); hapticSuccess() }} onMessage={() => openChat(selectedProfile)} onClose={() => setSelectedProfile(null)} />}
       {activeCommentPost && <CommentsSheet post={activeCommentPost} comments={comments[activeCommentPost.id] ?? []} onAdd={(text) => { setComments((state) => ({ ...state, [activeCommentPost.id]: [...(state[activeCommentPost.id] ?? []), { id: `comment-${Date.now()}`, name: displayName, text, time: 'همین حالا' }] })); hapticSuccess() }} onClose={() => setActiveComments(null)} />}
-      {settingsOpen && <SettingsSheet onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && <SettingsSheet onClose={() => setSettingsOpen(false)} onAccount={() => { setSettingsOpen(false); setAccountOpen(true) }} accountLabel={visibleAccount.username ? `@${visibleAccount.username}` : visibleAccount.email ?? 'تنظیم عضویت'} />}
+      {accountOpen && <AccountSheet account={visibleAccount} demoMode={demoMode} onClose={() => setAccountOpen(false)} onUsernameChanged={(username) => { setAccount((current) => ({ ...(current ?? visibleAccount), username })); setToast(`@${username} برای تو انتخاب شد`) }} onSignedOut={leaveMembership} onDeleted={finishAccountDeletion} />}
       <div className={`toast ${toast ? 'show' : ''}`} role="status" aria-live="polite"><Icon name="check" size={17} /> {toast}</div>
     </div>
   )
