@@ -866,7 +866,7 @@ export function App() {
     <div className="app-frame" dir="rtl">
       <div className="desktop-brand" aria-hidden="true"><span>MO◐N</span><p>آدم‌ها، ارتباط‌ها و زندگی واقعی.</p></div>
       <div className="app-shell">
-        <div className={`demo-ribbon ${session ? 'online-account' : ''}`}><span className="status-dot" /> {session ? 'عضویت آنلاین · دیتابیس امن' : 'نسخهٔ نمایشی · تغییرات روی همین دستگاه'}</div>
+        <div className={`demo-ribbon ${session ? 'online-account' : ''}`}><span className="status-dot" /> {session ? session.user.is_anonymous ? 'حساب رایگان · دیتابیس امن' : 'عضویت آنلاین · دیتابیس امن' : 'نسخهٔ نمایشی · تغییرات روی همین دستگاه'}</div>
 
         {activeTab === 'home' && <HomeScreen posts={posts} liked={liked} saved={saved} follows={follows} going={going} onToggleLike={(id) => toggleState(setLiked, id)} onToggleSave={(id) => { toggleState(setSaved, id); setToast(saved[id] ? 'از ذخیره‌ها حذف شد' : 'ذخیره شد') }} onToggleFollow={toggleFollow} onComments={setActiveComments} onProfile={setSelectedProfile} onShare={sharePost} onGoing={(id) => { toggleState(setGoing, id); setToast(going[id] ? 'از فهرست مهمان‌ها خارج شدی' : 'به رویداد اضافه شدی') }} onLife={() => setLifeOpen(true)} onDiscover={() => navigate('discover')} mood={mood} openTasks={tasks.filter((task) => !task.done).length} />}
         {activeTab === 'discover' && <DiscoverScreen follows={follows} onFollow={toggleFollow} onProfile={setSelectedProfile} />}

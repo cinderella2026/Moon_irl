@@ -6,7 +6,8 @@ MOON IRL یک شبکهٔ اجتماعی موبایل‌محور برای زند�
 
 نسخهٔ فعلی از یک پروتوتایپ صرف عبور کرده و زیرساخت واقعی عضویت و داده را دارد:
 
-- ورود بدون رمز با ایمیل و لینک یک‌بارمصرف
+- شروع رایگان با حساب واقعی و RLS-protected روی همان دستگاه، بدون نیاز به Telegram یا ایمیل
+- مسیر ورود بدون رمز با ایمیل و لینک یک‌بارمصرف، آمادهٔ فعال‌سازی پس از اتصال SMTP عمومی مالک
 - پروفایل واقعی متصل به Supabase و Row Level Security
 - اولین آیدی معمولی ۵ تا ۲۰ کاراکتری رایگان
 - قیمت ثابت ۱۵۰ Telegram Stars برای آیدی ۳–۴ حرفی یا تغییر آیدی
@@ -15,7 +16,7 @@ MOON IRL یک شبکهٔ اجتماعی موبایل‌محور برای زند�
 - فید، Discover، Top 10، Community Rating، پست، رویداد، Life Update، پیام‌ها و ابزارهای شخصی
 - Telegram WebApp bridge برای `ready`، `expand`، پوسته، haptic و بازکردن invoice
 
-ورود Apple و پرداخت آیدی ویژه به‌صورت feature flag کنترل می‌شوند. تا وقتی کلیدهای مالک و Bot Token فقط در secret manager سرور ثبت نشده باشند، دکمه‌های مربوطه عمداً غیرفعال می‌مانند و مسیر خراب به کاربر نشان داده نمی‌شود.
+ورود ایمیلی عمومی، Apple و پرداخت آیدی ویژه به‌صورت feature flag کنترل می‌شوند. تا وقتی SMTP و کلیدهای مالک و Bot Token فقط در secret manager سرور ثبت نشده باشند، دکمه‌های مربوطه عمداً غیرفعال می‌مانند و مسیر خراب به کاربر نشان داده نمی‌شود. حساب رایگان دستگاه، اولین آیدی معمولی و حذف حساب در همین وضعیت فعال‌اند.
 
 ## اجرای محلی
 
@@ -40,6 +41,7 @@ pnpm check
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_public_key
+VITE_EMAIL_AUTH_ENABLED=false
 VITE_EMAIL_CODE_ENABLED=false
 VITE_APPLE_AUTH_ENABLED=false
 VITE_PREMIUM_USERNAME_ENABLED=false

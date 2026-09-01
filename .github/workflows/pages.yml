@@ -36,6 +36,7 @@ jobs:
           # Data access is enforced by the database RLS policies in /supabase.
           VITE_SUPABASE_URL: https://wclrkiqfomrpyzxfdlsr.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_E94XEfex6Ad2e5XUEF1OUw_qM6pFZPs
+          VITE_EMAIL_AUTH_ENABLED: "false"
           VITE_EMAIL_CODE_ENABLED: "false"
           VITE_APPLE_AUTH_ENABLED: "false"
           VITE_PREMIUM_USERNAME_ENABLED: "false"

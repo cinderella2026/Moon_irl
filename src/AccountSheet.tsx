@@ -6,6 +6,7 @@ import {
   claimFreeUsername,
   createUsernameInvoice,
   deleteMoonAccount,
+  emailAuthEnabled,
   emailCodeEnabled,
   premiumUsernameEnabled,
   quoteUsername,
@@ -142,7 +143,7 @@ export function AccountSheet({ account, demoMode, onClose, onUsernameChanged, on
 
         <section className="account-identity-card">
           <span className="account-icon"><Icon name="verified" /></span>
-          <span><b>{demoMode ? 'نسخهٔ نمایشی' : 'عضویت فعال'}</b><small>{account?.email ?? 'بدون ایمیل متصل'}</small></span>
+          <span><b>{demoMode ? 'نسخهٔ نمایشی' : account?.email ? 'عضویت ایمیلی فعال' : 'حساب رایگان فعال'}</b><small>{account?.email ?? (demoMode ? 'داده‌های محلی' : 'حساب امن روی همین دستگاه')}</small></span>
           <em>{demoMode ? 'LOCAL' : 'VERIFIED'}</em>
         </section>
 
@@ -162,7 +163,8 @@ export function AccountSheet({ account, demoMode, onClose, onUsernameChanged, on
 
         <section className="account-block login-methods">
           <div className="account-block-title"><span><Icon name="lock" /><span><b>روش‌های ورود</b><small>بدون نگه‌داری رمز عبور در MOON</small></span></span></div>
-          <div><span className="login-provider-icon"><Icon name="message" /></span><span><b>{emailCodeEnabled ? 'ایمیل و کد موقت' : 'ایمیل و لینک یک‌بارمصرف'}</b><small>{account?.email ?? 'آمادهٔ اتصال'}</small></span><em>{backendConfigured && !demoMode ? 'فعال' : 'آماده'}</em></div>
+          <div><span className="login-provider-icon"><Icon name="moon" /></span><span><b>حساب امن دستگاه</b><small>قابل استفاده بدون Telegram یا رمز عبور</small></span><em>{backendConfigured && !demoMode ? 'فعال' : 'آماده'}</em></div>
+          <div><span className="login-provider-icon"><Icon name="message" /></span><span><b>{emailCodeEnabled ? 'ایمیل و کد موقت' : 'ایمیل و لینک یک‌بارمصرف'}</b><small>{account?.email ?? (emailAuthEnabled ? 'آمادهٔ اتصال' : 'نیازمند SMTP عمومی مالک')}</small></span><em>{account?.email ? 'فعال' : emailAuthEnabled ? 'آماده' : 'به‌زودی'}</em></div>
           <div><span className="login-provider-icon apple-small">●</span><span><b>Sign in with Apple</b><small>{appleAuthEnabled ? 'متصل به حساب MOON' : 'نیازمند Apple Developer و Service ID مالک'}</small></span><em>{appleAuthEnabled ? 'فعال' : 'به‌زودی'}</em></div>
         </section>
 

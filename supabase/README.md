@@ -22,3 +22,5 @@ After the bot secrets are present and the Telegram webhook is registered, set `V
 Apple sign-in requires the project owner's Apple Developer Team ID, Service ID and signing key. Only set `VITE_APPLE_AUTH_ENABLED=true` after the Apple provider is fully configured in Supabase.
 
 The default Supabase email template sends a magic link. `VITE_EMAIL_CODE_ENABLED` must remain `false` unless a custom email template that exposes `{{ .Token }}` has been configured and tested.
+
+Supabase's built-in SMTP is restricted to organization members and is not a public production mailer. Keep `VITE_EMAIL_AUTH_ENABLED=false` until a custom SMTP provider and sending domain are configured and tested. Anonymous sign-in remains enabled so anyone can start a real, RLS-protected account without Telegram or email; users should connect a durable identity before using the account across devices.

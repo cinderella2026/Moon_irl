@@ -4,6 +4,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim()
 const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim()
 
 export const backendConfigured = Boolean(supabaseUrl && supabasePublishableKey)
+export const emailAuthEnabled = import.meta.env.VITE_EMAIL_AUTH_ENABLED === 'true'
 export const emailCodeEnabled = import.meta.env.VITE_EMAIL_CODE_ENABLED === 'true'
 export const appleAuthEnabled = import.meta.env.VITE_APPLE_AUTH_ENABLED === 'true'
 export const premiumUsernameEnabled = import.meta.env.VITE_PREMIUM_USERNAME_ENABLED === 'true'
@@ -45,6 +46,13 @@ export function watchSession(callback: (session: Session | null) => void) {
   if (!supabase) return () => undefined
   const { data } = supabase.auth.onAuthStateChange((_event, session) => callback(session))
   return () => data.subscription.unsubscribe()
+}
+
+export async function signInAnonymously() {
+  if (!supabase) throw new Error('BACKEND_NOT_CONFIGURED')
+  const { data, error } = await supabase.auth.signInAnonymously()
+  if (error) throw error
+  return data.session
 }
 
 export async function sendEmailOtp(email: string) {
